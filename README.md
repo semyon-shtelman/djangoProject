@@ -20,7 +20,11 @@
 - HTML/CSS
 
 ## Установка и запуск
-
+Проект использует Poetry для управления зависимостями. Все зависимости указаны в pyproject.toml. Для установки выполните:
+```
+pip install poetry
+poetry install
+```
 1. Клонировать репозиторий:
 ```bash
 git clone https://github.com/semyon-shtelman/djangoProject.git
