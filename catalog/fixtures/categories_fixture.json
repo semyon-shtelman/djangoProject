@@ -1,0 +1,26 @@
+[
+{
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+        "title": "Электроника",
+        "description": "Смартфоны, ноутбуки и гаджеты"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+        "title": "Книги",
+        "description": "Художественная и учебная литература"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+        "title": "Одежда",
+        "description": "Мужская и женская одежда"
+    }
+}
+]
