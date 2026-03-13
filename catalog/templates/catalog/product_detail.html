@@ -1,0 +1,36 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+{% include 'catalog/includes/header.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ product.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Цена: {{ product.purchase_price }} ₽</p>
+                    <p>Категория: {{ product.category }}</p>
+                    <hr>
+                    <h5>Описание:</h5>
+                    <p>{{ product.description }}</p>
+
+                    {% if product.image %}
+                    <div class="text-center">
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid mt-3" style="max-height: 300px; width: auto; object-fit: contain;">
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{% url 'catalog:home' %}" class="btn btn-primary">Назад к каталогу</a>
+                        <a href="#" class="btn btn-success">Купить</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
