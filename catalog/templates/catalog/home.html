@@ -21,7 +21,9 @@
                 </div>
                 <div class="card-body">
                     <a> {{ product.description|truncatechars:100}} </a>
+                    {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid mt-3">
+                    {% endif %}
                     <a href="{% url 'catalog:product_detail' product.id %}" class="btn btn-lg btn-block btn-outline-primary">О товаре</a>
                 </div>
             </div>
