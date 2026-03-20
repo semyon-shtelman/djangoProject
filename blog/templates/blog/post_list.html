@@ -1,0 +1,18 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Посты{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Список Постов</h1>
+    <a href="{% url 'blog:post_create' %}" class="btn btn-primary mb-3">Создать новый объект</a>
+    <ul class="list-group">
+        {% for post in posts %}
+        <li class="list-group-item">
+            <a href="{% url 'blog:post_detail' post.id %}">{{ post.title }}</a>
+            <a href="{% url 'blog:post_edit' post.id %}" class="btn btn-sm btn-secondary ml-3">Редактировать</a>
+            <a href="{% url 'blog:post_delete' post.id %}" class="btn btn-sm btn-danger ml-1">Удалить</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
