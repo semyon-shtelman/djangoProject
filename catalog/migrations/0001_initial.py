@@ -8,39 +8,80 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=150, verbose_name='Название')),
-                ('description', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=150, verbose_name="Название")),
+                ("description", models.TextField()),
             ],
             options={
-                'verbose_name': 'категория',
-                'verbose_name_plural': 'категории',
-                'ordering': ['title'],
+                "verbose_name": "категория",
+                "verbose_name_plural": "категории",
+                "ordering": ["title"],
             },
         ),
         migrations.CreateModel(
-            name='Product',
+            name="Product",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=150, verbose_name='Название')),
-                ('description', models.TextField(blank=True)),
-                ('image', models.ImageField(upload_to='products/', verbose_name='Изображение')),
-                ('purchase_price', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Цена за покупку')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Дата изменения')),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products', to='catalog.category', verbose_name='Категория')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=150, verbose_name="Название")),
+                ("description", models.TextField(blank=True)),
+                (
+                    "image",
+                    models.ImageField(
+                        upload_to="products/", verbose_name="Изображение"
+                    ),
+                ),
+                (
+                    "purchase_price",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="Цена за покупку"
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="Дата изменения"),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="products",
+                        to="catalog.category",
+                        verbose_name="Категория",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Товар',
-                'verbose_name_plural': 'Товары',
-                'ordering': ['-created_at'],
+                "verbose_name": "Товар",
+                "verbose_name_plural": "Товары",
+                "ordering": ["-created_at"],
             },
         ),
     ]
