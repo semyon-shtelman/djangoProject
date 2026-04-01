@@ -4,10 +4,10 @@ from django.db import models
 class User(AbstractUser):
     username = None
 
-    email = models.EmailField(unique=True, verbose_name='Email', help_text='Укажите вашу почту')
-    phone = models.CharField(max_length=15, blank=True, null=True, verbose_name='Номер телефона', help_text='Введите номер телефона')
-    avatar = models.ImageField(upload_to='users/avatars/', blank=True, null=True, verbose_name='Аватар', help_text='Загрузите свой аватар')
-    country = models.CharField(max_length=100, blank=True, null=True, verbose_name='Страна', )
+    email = models.EmailField(unique=True, verbose_name='Email',)
+    phone = models.CharField(max_length=15, blank=True, null=True, verbose_name='Номер телефона',)
+    avatar = models.ImageField(upload_to='users/avatars/', blank=True, null=True, verbose_name='Аватар')
+    country = models.CharField(max_length=100, blank=True, null=True, verbose_name='Страна')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
