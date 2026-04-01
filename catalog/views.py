@@ -1,12 +1,13 @@
 from django.http import HttpResponse
 from django.views import generic
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
 from catalog.forms import ProductForm
 from catalog.models import Product
 
 
-class ProductCreateView(generic.CreateView):
+class ProductCreateView(LoginRequiredMixin,generic.CreateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
@@ -19,7 +20,7 @@ class ProductListView(generic.ListView):
     context_object_name = "products"
 
 
-class ProductDetailView(generic.DetailView):
+class ProductDetailView(LoginRequiredMixin, generic.DetailView):
     model = Product
     template_name = "catalog/product_detail.html"
     context_object_name = "product"
