@@ -20,13 +20,13 @@ class ProductListView(generic.ListView):
     context_object_name = "products"
 
 
-class ProductDetailView(LoginRequiredMixin, generic.DetailView):
+class ProductDetailView(LoginRequiredMixin,generic.DetailView):
     model = Product
     template_name = "catalog/product_detail.html"
     context_object_name = "product"
 
 
-class ProductUpdateView(generic.UpdateView):
+class ProductUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
@@ -35,7 +35,7 @@ class ProductUpdateView(generic.UpdateView):
         return reverse_lazy("catalog:product_detail", kwargs={"pk": self.object.pk})
 
 
-class ProductDeleteView(generic.DeleteView):
+class ProductDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Product
     template_name = "catalog/product_confirm_delete.html"
     success_url = reverse_lazy("catalog:product_list")
