@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.views import generic
+from django.views import generic, View
 
 from catalog.forms import ProductForm
 from catalog.models import Product
@@ -72,8 +72,6 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateV
         product = self.get_object()
         user = self.request.user
 
-        if user.has_perm('catalog.can_unpublish_product'):
-            return True
         return user == product.owner
 
 
@@ -92,7 +90,23 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteV
 
         if user.has_perm('catalog.can_unpublish_product'):
             return True
+
+        if user.has_perm('catalog.delete_product'):
+            return True
+
         return user == product.owner
+
+class UnpublishProductView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'catalog.can_unpublish_product'
+
+    def post(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+
+
+        product.is_publish = not product.is_publish
+        product.save()
+
+        return redirect('catalog:product_detail', pk=product.pk)
 
 
 class ContactsTemplateView(generic.TemplateView):

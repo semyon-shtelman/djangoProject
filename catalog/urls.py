@@ -17,4 +17,5 @@ urlpatterns = [
         name="product_delete",
     ),
     path("contacts/", views.ContactsTemplateView.as_view(), name="contacts"),
+    path('product/<int:pk>/unpublish/', views.UnpublishProductView.as_view(), name='product_unpublish')
 ]
