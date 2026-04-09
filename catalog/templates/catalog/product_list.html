@@ -13,22 +13,35 @@
 
 <div class="container">
     <div class="row text-center">
-        {% for product in products%}
+        {% for product in products %}
         <div class="col-3">
             <div class="card mb-4 box-shadow">
                 <div class="card-header">
                     <h4 class="my-0 font-weight-normal">{{ product.title }}</h4>
+                    {% if not product.is_publish and user == product.owner %}
+                        <span class="badge bg-warning mt-1">На проверке</span>
+                    {% endif %}
                 </div>
                 <div class="card-body">
-                    <a> {{ product.description|truncatechars:100}} </a>
+                    <p>{{ product.description|truncatechars:100 }}</p>
+
                     {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid mt-3">
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid mt-3">
                     {% endif %}
-                    <a href="{% url 'catalog:product_detail' product.id %}" class="btn btn-lg btn-block btn-outline-primary">О товаре</a>
+
+                    <p class="mt-2"><strong>{{ product.price }} руб.</strong></p>
+
+                    <a href="{% url 'catalog:product_detail' product.id %}" class="btn btn-lg btn-block btn-outline-primary">
+                        О товаре
+                    </a>
                 </div>
             </div>
         </div>
+        {% empty %}
+            <div class="col-12">
+                <p>Нет доступных продуктов.</p>
+            </div>
         {% endfor %}
     </div>
 </div>
-{%endblock%}
+{% endblock %}
