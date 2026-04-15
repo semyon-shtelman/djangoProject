@@ -20,7 +20,12 @@
                     <h4 class="my-0 font-weight-normal">{{ product.title }}</h4>
                     {% if not product.is_publish and user == product.owner %}
                         <span class="badge bg-warning mt-1">На проверке</span>
+                    {% elif product.is_publish %}
+                        <span class="badge bg-success">Опубликован</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Не опубликован</span>
                     {% endif %}
+
                 </div>
                 <div class="card-body">
                     <p>{{ product.description|truncatechars:100 }}</p>
