@@ -1,7 +1,6 @@
-from functools import update_wrapper
-from itertools import product
-
-from django.contrib import messages
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, get_object_or_404
@@ -32,17 +31,30 @@ class ProductListView(generic.ListView):
         user = self.request.user
 
         if not user.is_authenticated:
-            return Product.objects.filter(is_publish=True)
+            cached = cache.get('product_list_anonymous')
+            if cached is not None:
+                return cached
+            queryset = Product.objects.filter(is_publish=True)
+            cache.set('product_list_anonymous', queryset, 60 * 15)
+            return queryset
 
         if user.has_perm('catalog.can_unpublish_product'):
             return Product.objects.all()
 
+        cache_key = f'product_list_user_{user.id}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         published_product = Product.objects.filter(is_publish=True)
-        my_product = Product.objects.filter(owner=user)
+        user_products = Product.objects.filter(owner=user)
+        queryset = published_product.union(user_products)
 
-        return published_product.union(my_product)
+        cache.set(cache_key, queryset, 60 * 15)
+        return queryset
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductDetailView(LoginRequiredMixin, generic.DetailView):
     model = Product
     template_name = "catalog/product_detail.html"
@@ -52,10 +64,7 @@ class ProductDetailView(LoginRequiredMixin, generic.DetailView):
         product = get_object_or_404(Product, pk=self.kwargs['pk'])
         user = self.request.user
 
-        if user.has_perm('catalog.can_unpublish_product'):
-            return product
-
-        if user == product.owner:
+        if user.has_perm('catalog.can_unpublish_product') or user == product.owner:
             return product
 
         if product.is_publish:
