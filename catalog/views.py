@@ -8,7 +8,8 @@ from django.urls import reverse_lazy
 from django.views import generic, View
 
 from catalog.forms import ProductForm
-from catalog.models import Product
+from catalog.models import Product, Category
+from catalog.services import ProductService
 
 
 class ProductCreateView(LoginRequiredMixin, generic.CreateView):
@@ -53,6 +54,50 @@ class ProductListView(generic.ListView):
         cache.set(cache_key, queryset, 60 * 15)
         return queryset
 
+class CategoryListViews(generic.ListView):
+    model = Category
+    template_name = 'catalog/category_list.html'
+    context_object_name = 'categories'
+
+class CategoryProductsView(generic.ListView):
+    model = Product
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        user = self.request.user
+        category_id = self.kwargs.get('category_id')
+        product_by_category = ProductService.get_product_by_category(category_id)
+
+        if not user.is_authenticated:
+            cache_key = f'product_list_anonymous_category_{category_id}'
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return cached
+            queryset = product_by_category.filter(is_publish=True)
+            cache.set(cache_key, queryset, 60 * 15)
+            return queryset
+
+        if user.has_perm('catalog.can_unpublish_product'):
+            return product_by_category
+
+        cache_key = f'product_list_user_{user.id}_category_{category_id}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        published_product = product_by_category.filter(is_publish=True)
+        user_products = product_by_category.filter(owner=user)
+        queryset = published_product.union(user_products)
+
+        cache.set(cache_key, queryset, 60 * 15)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs.get('category_id')
+        context['category'] = get_object_or_404(Category, id=category_id)
+        return context
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductDetailView(LoginRequiredMixin, generic.DetailView):
@@ -116,7 +161,6 @@ class UnpublishProductView(LoginRequiredMixin, PermissionRequiredMixin, View):
         product.save()
 
         return redirect('catalog:product_detail', pk=product.pk)
-
 
 class ContactsTemplateView(generic.TemplateView):
     template_name = "catalog/contacts.html"
