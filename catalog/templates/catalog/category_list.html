@@ -1,0 +1,29 @@
+{% extends 'catalog/base.html' %}
+
+{%block title%}Категории{% endblock %}
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Категории</h1>
+    {% if user.is_authenticated %}
+    <p class="lead">Добро пожаловать, {{ user.email }}</p>
+    {% else %}
+    <p class="lead">Добро пожаловать в наш магазин!</p>
+    {% endif %}
+</div>
+<div class="container">
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category.title }}</h5>
+                    <a href="{% url 'catalog:category_products' category.id %}" class="btn btn-primary">
+                        Перейти
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

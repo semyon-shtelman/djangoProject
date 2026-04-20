@@ -1,7 +1,6 @@
-from functools import update_wrapper
-from itertools import product
-
-from django.contrib import messages
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, get_object_or_404
@@ -9,7 +8,8 @@ from django.urls import reverse_lazy
 from django.views import generic, View
 
 from catalog.forms import ProductForm
-from catalog.models import Product
+from catalog.models import Product, Category
+from catalog.services import ProductService
 
 
 class ProductCreateView(LoginRequiredMixin, generic.CreateView):
@@ -32,17 +32,74 @@ class ProductListView(generic.ListView):
         user = self.request.user
 
         if not user.is_authenticated:
-            return Product.objects.filter(is_publish=True)
+            cached = cache.get('product_list_anonymous')
+            if cached is not None:
+                return cached
+            queryset = Product.objects.filter(is_publish=True)
+            cache.set('product_list_anonymous', queryset, 60 * 15)
+            return queryset
 
         if user.has_perm('catalog.can_unpublish_product'):
             return Product.objects.all()
 
+        cache_key = f'product_list_user_{user.id}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         published_product = Product.objects.filter(is_publish=True)
-        my_product = Product.objects.filter(owner=user)
+        user_products = Product.objects.filter(owner=user)
+        queryset = published_product.union(user_products)
 
-        return published_product.union(my_product)
+        cache.set(cache_key, queryset, 60 * 15)
+        return queryset
 
+class CategoryListViews(generic.ListView):
+    model = Category
+    template_name = 'catalog/category_list.html'
+    context_object_name = 'categories'
 
+class CategoryProductsView(generic.ListView):
+    model = Product
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        user = self.request.user
+        category_id = self.kwargs.get('category_id')
+        product_by_category = ProductService.get_product_by_category(category_id)
+
+        if not user.is_authenticated:
+            cache_key = f'product_list_anonymous_category_{category_id}'
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return cached
+            queryset = product_by_category.filter(is_publish=True)
+            cache.set(cache_key, queryset, 60 * 15)
+            return queryset
+
+        if user.has_perm('catalog.can_unpublish_product'):
+            return product_by_category
+
+        cache_key = f'product_list_user_{user.id}_category_{category_id}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        published_product = product_by_category.filter(is_publish=True)
+        user_products = product_by_category.filter(owner=user)
+        queryset = published_product.union(user_products)
+
+        cache.set(cache_key, queryset, 60 * 15)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs.get('category_id')
+        context['category'] = get_object_or_404(Category, id=category_id)
+        return context
+
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductDetailView(LoginRequiredMixin, generic.DetailView):
     model = Product
     template_name = "catalog/product_detail.html"
@@ -52,10 +109,7 @@ class ProductDetailView(LoginRequiredMixin, generic.DetailView):
         product = get_object_or_404(Product, pk=self.kwargs['pk'])
         user = self.request.user
 
-        if user.has_perm('catalog.can_unpublish_product'):
-            return product
-
-        if user == product.owner:
+        if user.has_perm('catalog.can_unpublish_product') or user == product.owner:
             return product
 
         if product.is_publish:
@@ -107,7 +161,6 @@ class UnpublishProductView(LoginRequiredMixin, PermissionRequiredMixin, View):
         product.save()
 
         return redirect('catalog:product_detail', pk=product.pk)
-
 
 class ContactsTemplateView(generic.TemplateView):
     template_name = "catalog/contacts.html"
